@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpusim-scheduler
+  namespace: kube-system
+  labels:
+    component: gpusim-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: gpusim-scheduler
+  template:
+    metadata:
+      labels:
+        component: gpusim-scheduler
+    spec:
+      serviceAccountName: gpusim-scheduler
+      priorityClassName: system-cluster-critical
+      containers:
+        - name: scheduler
+          image: gpusim-scheduler:latest
+          imagePullPolicy: Never
+          args:
+            - /gpusim-scheduler
+            - --config=/etc/kubernetes/scheduler-config.yaml
+            - --v=3
+          volumeMounts:
+            - name: config
+              mountPath: /etc/kubernetes
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: gpusim-scheduler-config
